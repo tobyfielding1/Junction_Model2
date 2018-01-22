@@ -1,0 +1,22 @@
+<component name="libraryTable">
+  <library name="jsefa-1.0.0">
+    <CLASSES>
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/csv/employee/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/csv/header/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/csv/yellow_pages/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/flr/employee/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/flr/yellow_pages/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/multiple/employee/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/performance/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/xml/showcase/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE/samples/xml/yellow_pages/src" />
+      <root url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE" />
+    </SOURCES>
+    <jarDirectory url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE" recursive="false" />
+    <jarDirectory url="file://C:/Program Files/Java/jsefa-1.0.0.RELEASE" recursive="false" type="SOURCES" />
+  </library>
+</component>
