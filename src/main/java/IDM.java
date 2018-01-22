@@ -56,7 +56,7 @@ public class IDM {
 
     public double calcAcc(Vehicle me, double frontObjectSpeed) {
 
-        return Math.random() * calcAcc(me, frontObjectSpeed, 1, 1, 1);
+        return calcAcc(me, frontObjectSpeed, 1, 1, 1);
     }
 
 

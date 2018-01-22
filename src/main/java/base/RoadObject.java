@@ -6,14 +6,14 @@ public class RoadObject implements Comparable<RoadObject> {
 
     //input parameters
     @CsvBindByName
-    static double length = 0;
+    public static double length = 0;
 
 
     public double v = 0;
     public double a = 0;
     public LaneSegment segment;
     Simulator simulator;
-    double pos; //position of obj in mass from start of base.LaneSegment
+    public double pos; //position of obj in mass from start of base.LaneSegment
 
     public RoadObject() {
     }

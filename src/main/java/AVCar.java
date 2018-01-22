@@ -5,7 +5,7 @@ import com.opencsv.bean.CsvBindByName;
 
 import java.util.ArrayList;
 
-public class AV1 extends Vehicle {
+public class AVCar extends Vehicle {
 
     //input parameters for motion
     @CsvBindByName
@@ -37,15 +37,15 @@ public class AV1 extends Vehicle {
 
     IDM idm;
 
-    public AV1() {
+    public AVCar() {
     }
 
-    public AV1(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
+    public AVCar(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
         super(pos, segment, route, s, v);
         this.idm = new IDM(v0, a0, b, T, s0, s1);
     }
 
-    public AV1(AV1 other) {
+    public AVCar(AVCar other) {
         super(other);
         this.idm = other.idm;
     }
@@ -82,7 +82,7 @@ public class AV1 extends Vehicle {
 
     @Override
     protected Vehicle makeCopy() {
-        return new AV1(this);
+        return new AVCar(this);
     }
 
     @Override

@@ -14,7 +14,7 @@ public abstract class Simulator implements Runnable {
     //input parameters
     @CsvBindByName
     public double timeStep; // in s
-    public double time; // in s
+    public double time = 0; // in s
     public LaneSegment[] laneSegments = {};
     public ArrayList<Vehicle> vehicles = new ArrayList<Vehicle>();
     @CsvBindByName
@@ -32,6 +32,9 @@ public abstract class Simulator implements Runnable {
     double maxInput;
     @CsvBindByName
     double averageElapsedTime;
+    @CsvBindByName
+    String name;
+
     double duration; // in s
     List<Double> vehicleDelay = new ArrayList<Double>();
     List<Double> vehicleElapsedTime = new ArrayList<Double>();
@@ -39,8 +42,8 @@ public abstract class Simulator implements Runnable {
     List<Double> vehicleCo2 = new ArrayList<Double>();
     int output = 0; // count of vehicles leaving
     int input = 0; // count of vehicles entering
-    double lastThroughputCheckTime = 0; //when was the last time output was measured
-    double lastInputCheckTime = 0;
+    double lastThroughputCheckTime = 300; //when was the last time output was measured
+    double lastInputCheckTime = 300;
     DistTimeGraph distTimeGraph = new DistTimeGraph("graph window");
     private long startTime = System.currentTimeMillis();
 
@@ -75,6 +78,14 @@ public abstract class Simulator implements Runnable {
         return averageCo2;
     }
 
+    public double getAverageElapsedTime() {
+        return averageElapsedTime;
+    }
+
+    public String getName() {
+        return this.getClass().getName();
+    }
+
     public String getTimeString(double time) {
         return dateFormat.format(new Date(TimeUnit.SECONDS.toMillis((long) time)));
     }
@@ -100,23 +111,38 @@ public abstract class Simulator implements Runnable {
 
         System.out.println("simulation completed after running for " + getTimeString(time) + " with avg delay: " + averageDelay);
 
-        //distTimeGraph.showChart("distance time graph for " + this.getClass().getName());
-        //distTimeGraph.pack();
-        //distTimeGraph.setVisible(true);
+        distTimeGraph.showChart("distance time graph for " + this.getClass().getName());
+        distTimeGraph.pack();
+        distTimeGraph.setVisible(true);
     }
 
     void nextStep() {
         //logic for adding vehicles
         List<Vehicle> newVehicles = this.generateVehicles();
-        vehicles.addAll(newVehicles);
+        for (int i = 0; i < newVehicles.size(); i++) {
+            Vehicle v = newVehicles.get(i);
+            double objectAheadDist;
+            RoadObject objectAhead = v.segment.roadObjects.stream().sorted().findFirst().orElse(null);
+            if (objectAhead != null)
+                objectAheadDist = objectAhead.pos;
+            else
+                objectAheadDist = v.segment.getLength();
+            if (objectAheadDist > RoadObject.length + RoadObject.length + 4) {
+                vehicles.add(v);
+                v.segment.addRoadObject(v);
+            } else
+                newVehicles.remove(v);
+        }
         if (time - lastInputCheckTime > 60) {
             lastInputCheckTime = time;
-            if (input > maxInput) {
+            if (input > maxInput)
                 maxInput = input;
-                input = 0;
-            }
+            input = 0;
         }
-        input += newVehicles.size();
+        if (time > 300)
+            input += newVehicles.size();
+        else
+            input = 0;
 
         //update each vehicle in the model
         for (int i = 0; i < vehicles.size(); i++)
@@ -146,12 +172,12 @@ public abstract class Simulator implements Runnable {
     public void processData(Vehicle v) {
         if (time - lastThroughputCheckTime > 60) {
             lastThroughputCheckTime = time;
-            if (output > maxThroughput) {
+            if (output > maxThroughput)
                 maxThroughput = output;
-                output = 0;
-            }
+            output = 0;
         }
-        output++;
+        if (time > 300)
+            output++;
 
         vehicleElapsedTime.add(v.elapsedTime);
         vehicleDelay.add(v.getDelay());

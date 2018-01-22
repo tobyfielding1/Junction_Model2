@@ -25,15 +25,14 @@ public class SingleLaneAVSim extends Simulator {
         List<Vehicle> newVehicles = new LinkedList<Vehicle>();
 
         for (int startSegment = 0; startSegment < spawnTimer.length; startSegment++) {
-            if (Math.random() < seg1InputRate * timeStep && time - spawnTimer[startSegment] > AV1.T) {
+            if (Math.random() < seg1InputRate * timeStep && time - spawnTimer[startSegment] > AVCar.T) {
                 spawnTimer[startSegment] = time;
                 LaneSegment ls = laneSegments[startSegment];
-                newVehicles.add(new AV1(0, ls, generateRoute(ls), this, ls.targetSpeed));
+                newVehicles.add(new AVCar(0, ls, generateRoute(ls), this, ls.targetSpeed));
             }
         }
         return newVehicles;
     }
-
     @Override
     public void processSpecificData(Vehicle v) {
 

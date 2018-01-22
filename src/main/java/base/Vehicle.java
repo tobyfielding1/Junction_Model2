@@ -62,7 +62,7 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     }
 
     public double getDelay() {
-        return elapsedTime - elapsedDist / 20;
+        return elapsedTime - elapsedDist / 15;
     }
 
     public boolean getObjectAhead() {

@@ -10,7 +10,7 @@ public class LaneSegment {
     ArrayList<LaneSegment> successors; //next lane segments connected to this one
     ArrayList<LaneSegment> conflicts; //spatially overlapping laneSegments, one vehicle at a time
     ArrayList<LaneSegment> visible; //which lane segments can be observed visually from this segment
-    Collection<RoadObject> roadObjects; //any object that is in this lane segment
+    public Collection<RoadObject> roadObjects; //any object that is in this lane segment
 
     public LaneSegment(double targetSpeed, double length) {
         this.targetSpeed = targetSpeed;
