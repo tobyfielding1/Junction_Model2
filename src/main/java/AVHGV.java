@@ -5,14 +5,7 @@ import com.opencsv.bean.CsvBindByName;
 
 import java.util.ArrayList;
 
-public class HDCar extends Vehicle {
-
-    @CsvBindByName
-    static double p;
-    @CsvBindByName
-    static double T1;
-    @CsvBindByName
-    static double T2;
+public class AVHGV extends Vehicle {
 
     @CsvBindByName
     public static Integer percent;
@@ -47,15 +40,15 @@ public class HDCar extends Vehicle {
 
     IDM idm;
 
-    public HDCar() {
+    public AVHGV() {
     }
 
-    public HDCar(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
+    public AVHGV(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
         super(pos, segment, route, s, v);
-        this.idm = new TwoDimIDM(v0, a0, b, T, s0, s1, T1, T2, p, s.timeStep);
+        this.idm = new IDM(v0, a0, b, T, s0, s1);
     }
 
-    public HDCar(HDCar other) {
+    public AVHGV(AVHGV other) {
         super(other);
         this.idm = other.idm;
     }
@@ -92,7 +85,7 @@ public class HDCar extends Vehicle {
 
     @Override
     protected Vehicle makeCopy() {
-        return new HDCar(this);
+        return new AVHGV(this);
     }
 
     @Override

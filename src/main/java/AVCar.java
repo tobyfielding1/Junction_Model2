@@ -7,6 +7,9 @@ import java.util.ArrayList;
 
 public class AVCar extends Vehicle {
 
+    @CsvBindByName
+    public static Integer percent;
+
     //input parameters for motion
     @CsvBindByName
     public static double v0;

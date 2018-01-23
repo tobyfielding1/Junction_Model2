@@ -23,12 +23,11 @@ public class SingleLaneAVSim extends Simulator {
     @Override
     public List<Vehicle> generateVehicles() {
         List<Vehicle> newVehicles = new LinkedList<Vehicle>();
-
         for (int startSegment = 0; startSegment < spawnTimer.length; startSegment++) {
-            if (Math.random() < seg1InputRate * timeStep && time - spawnTimer[startSegment] > AVCar.T) {
+            if (Math.random() < seg1InputRate * timeStep && time - spawnTimer[startSegment] > 1.5) {
                 spawnTimer[startSegment] = time;
                 LaneSegment ls = laneSegments[startSegment];
-                newVehicles.add(new AVCar(0, ls, generateRoute(ls), this, ls.targetSpeed));
+                newVehicles.add(this.createVehicle(0, ls, generateRoute(ls), this, ls.targetSpeed));
             }
         }
         return newVehicles;

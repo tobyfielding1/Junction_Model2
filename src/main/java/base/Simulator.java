@@ -1,12 +1,13 @@
 package base;
 
 import com.opencsv.bean.CsvBindByName;
+import org.reflections.Reflections;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Simulator implements Runnable {
@@ -46,8 +47,21 @@ public abstract class Simulator implements Runnable {
     double lastInputCheckTime = 300;
     DistTimeGraph distTimeGraph = new DistTimeGraph("graph window");
     private long startTime = System.currentTimeMillis();
+    Map<Double, Class<? extends Vehicle>> vehicleClasses;
+
 
     public Simulator() {
+        Reflections reflections = new Reflections("");
+        vehicleClasses = new TreeMap<Double, Class<? extends Vehicle>>();
+        for (Class vehicleClass : reflections.getSubTypesOf(Vehicle.class)) {
+            try {
+                vehicleClasses.put((Integer) vehicleClass.getField("percent").get(null) + Math.random(), vehicleClass);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public double getMaxInput() {
@@ -93,6 +107,31 @@ public abstract class Simulator implements Runnable {
     public void setDuration(String s) {
         String[] tokens = s.split(":");
         duration = 3600 * Double.parseDouble(tokens[0]) + 60 * Double.parseDouble(tokens[1]) + Double.parseDouble(tokens[2]);
+    }
+
+    public Vehicle createVehicle(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
+
+        int p = (new Random()).nextInt(100);
+        int cumulativeProbability = 0;
+        for (Double i : vehicleClasses.keySet()) {
+            try {
+                cumulativeProbability += i;
+
+                if (p <= cumulativeProbability) {
+                    Constructor<?> cons = vehicleClasses.get(i).getConstructor(double.class, LaneSegment.class, ArrayList.class, Simulator.class, double.class);
+                    return (Vehicle) cons.newInstance(0, segment, generateRoute(segment), s, segment.targetSpeed);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     @Override

@@ -5,18 +5,10 @@ import com.opencsv.bean.CsvBindByName;
 
 import java.util.ArrayList;
 
-public class HDCar extends Vehicle {
-
-    @CsvBindByName
-    static double p;
-    @CsvBindByName
-    static double T1;
-    @CsvBindByName
-    static double T2;
+public class HDHGV extends Vehicle {
 
     @CsvBindByName
     public static Integer percent;
-
     //input parameters for motion
     @CsvBindByName
     public static double v0;
@@ -30,7 +22,12 @@ public class HDCar extends Vehicle {
     public static double s0;
     @CsvBindByName
     public static double s1;
-
+    @CsvBindByName
+    static double p;
+    @CsvBindByName
+    static double T1;
+    @CsvBindByName
+    static double T2;
     //input params to do with energy usage
     @CsvBindByName
     static double fi; //constant idle fuel consumption rate in mL/h
@@ -47,15 +44,15 @@ public class HDCar extends Vehicle {
 
     IDM idm;
 
-    public HDCar() {
+    public HDHGV() {
     }
 
-    public HDCar(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
+    public HDHGV(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
         super(pos, segment, route, s, v);
         this.idm = new TwoDimIDM(v0, a0, b, T, s0, s1, T1, T2, p, s.timeStep);
     }
 
-    public HDCar(HDCar other) {
+    public HDHGV(HDHGV other) {
         super(other);
         this.idm = other.idm;
     }
@@ -92,7 +89,7 @@ public class HDCar extends Vehicle {
 
     @Override
     protected Vehicle makeCopy() {
-        return new HDCar(this);
+        return new HDHGV(this);
     }
 
     @Override
@@ -103,3 +100,4 @@ public class HDCar extends Vehicle {
             a = idm.calcAcc(this, 0);
     }
 }
+
