@@ -22,12 +22,18 @@ public class HDHGV extends Vehicle {
     public static double s0;
     @CsvBindByName
     public static double s1;
+
+    @CsvBindByName
+    public static double coolness;
+
     @CsvBindByName
     static double p;
     @CsvBindByName
     static double T1;
     @CsvBindByName
     static double T2;
+
+
     //input params to do with energy usage
     @CsvBindByName
     static double fi; //constant idle fuel consumption rate in mL/h

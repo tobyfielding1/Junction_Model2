@@ -31,6 +31,9 @@ public class HDCar extends Vehicle {
     @CsvBindByName
     public static double s1;
 
+    @CsvBindByName
+    public static double coolness;
+
     //input params to do with energy usage
     @CsvBindByName
     static double fi; //constant idle fuel consumption rate in mL/h

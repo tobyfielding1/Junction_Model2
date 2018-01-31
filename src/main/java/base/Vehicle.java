@@ -51,7 +51,7 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     public void nextStep(double timeStep) {
         recordStats(timeStep);
         updateAccel(timeStep);
-        if (a < -this.getB())
+        if (a < -this.getB() - 0.1)
             criticalEvents++;
         updateMotion(timeStep);
         updateEnergy(timeStep);
