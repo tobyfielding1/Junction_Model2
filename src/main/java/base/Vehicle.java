@@ -14,6 +14,7 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     double localTime;
     double elapsedTime = 0;
     double elapsedDist = 0;
+    int criticalEvents = 0;
 
     List<Double[]> distTime = new ArrayList<Double[]>();
 
@@ -50,11 +51,15 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     public void nextStep(double timeStep) {
         recordStats(timeStep);
         updateAccel(timeStep);
+        if (a < -this.getB())
+            criticalEvents++;
         updateMotion(timeStep);
         updateEnergy(timeStep);
         localTime += timeStep;
         elapsedTime += timeStep;
     }
+
+    protected abstract double getB();
 
     //change this to record different aspects
     private void recordStats(double timeStep) {

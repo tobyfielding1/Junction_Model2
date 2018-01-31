@@ -89,6 +89,11 @@ public class AVCar extends Vehicle {
     }
 
     @Override
+    protected double getB() {
+        return b;
+    }
+
+    @Override
     public void updateAccel(double timeStep) {
         if (this.getObjectAhead())
             a = idm.calcAcc(this, objectAhead.v);

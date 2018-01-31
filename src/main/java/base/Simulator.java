@@ -35,6 +35,8 @@ public abstract class Simulator implements Runnable {
     double averageElapsedTime;
     @CsvBindByName
     String name;
+    @CsvBindByName
+    int criticalEvents = 0; //count of breaking greater than B.
 
     double duration; // in s
     List<Double> vehicleDelay = new ArrayList<Double>();
@@ -62,6 +64,10 @@ public abstract class Simulator implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public int getCriticalEvents() {
+        return criticalEvents;
     }
 
     public double getMaxInput() {
@@ -223,6 +229,7 @@ public abstract class Simulator implements Runnable {
         vehicleFuel.add(v.fuelUsed);
         vehicleCo2.add(v.Co2Produced);
         distTimeGraph.addSeries(v.distTime);
+        criticalEvents += v.criticalEvents;
 
         processSpecificData(v);
     }
