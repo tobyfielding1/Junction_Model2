@@ -1,3 +1,5 @@
+package m;
+
 import base.LaneSegment;
 import base.Simulator;
 import base.Vehicle;
@@ -5,7 +7,7 @@ import com.opencsv.bean.CsvBindByName;
 
 import java.util.ArrayList;
 
-public class AVHGV extends Vehicle {
+public class AVCar extends Vehicle {
 
     @CsvBindByName
     public static Integer percent;
@@ -41,19 +43,11 @@ public class AVHGV extends Vehicle {
     @CsvBindByName
     static double fCo2; //CO2 to Fuel Consumption Rate in grams per millilitre (kg per litre) of fuel (g/mL or kg/L)
 
-    IDM idm;
-
-    public AVHGV() {
+    public AVCar() {
     }
 
-    public AVHGV(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
-        super(pos, segment, route, s, v);
-        this.idm = new IDM(v0, a0, b, T, s0, s1);
-    }
-
-    public AVHGV(AVHGV other) {
-        super(other);
-        this.idm = other.idm;
+    public AVCar(ArrayList<LaneSegment> route, Simulator s, double v, int source) {
+        super(route, s, v, new IDM(v0, a0, b, T, s0, s1), source);
     }
 
     @Override
@@ -84,11 +78,6 @@ public class AVHGV extends Vehicle {
     @Override
     public double getfCo2() {
         return fCo2;
-    }
-
-    @Override
-    protected Vehicle makeCopy() {
-        return new AVHGV(this);
     }
 
     @Override

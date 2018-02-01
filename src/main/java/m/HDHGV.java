@@ -1,3 +1,5 @@
+package m;
+
 import base.LaneSegment;
 import base.Simulator;
 import base.Vehicle;
@@ -48,19 +50,11 @@ public class HDHGV extends Vehicle {
     @CsvBindByName
     static double fCo2; //CO2 to Fuel Consumption Rate in grams per millilitre (kg per litre) of fuel (g/mL or kg/L)
 
-    IDM idm;
-
     public HDHGV() {
     }
 
-    public HDHGV(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
-        super(pos, segment, route, s, v);
-        this.idm = new TwoDimIDM(v0, a0, b, T, s0, s1, T1, T2, p, s.timeStep);
-    }
-
-    public HDHGV(HDHGV other) {
-        super(other);
-        this.idm = other.idm;
+    public HDHGV(ArrayList<LaneSegment> route, Simulator s, double v, int source) {
+        super(route, s, v, new TwoDimIDM(v0, a0, b, T, s0, s1, T1, T2, p, s.timeStep), source);
     }
 
     @Override
@@ -91,11 +85,6 @@ public class HDHGV extends Vehicle {
     @Override
     public double getfCo2() {
         return fCo2;
-    }
-
-    @Override
-    protected Vehicle makeCopy() {
-        return new HDHGV(this);
     }
 
     @Override

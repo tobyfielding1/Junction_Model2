@@ -1,3 +1,5 @@
+package m;
+
 import base.Simulator;
 import base.Vehicle;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -8,6 +10,7 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.reflections.Reflections;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -57,6 +60,7 @@ public class Main {
 
         //output results and vehicles to CSV with timestamp prefix
         writer.close();
+        Desktop.getDesktop().open(file);
         //copies vehicle paramaters file to timestamped version
         Files.copy(Paths.get(masterFolder + "vehicles.csv"), Paths.get(masterFolder + resultsFolderName + timeStamp + "_vehicles.csv"));
     }

@@ -1,3 +1,6 @@
+package m;
+
+import base.FollowingModel;
 import base.Vehicle;
 
 /**
@@ -26,7 +29,7 @@ import base.Vehicle;
  * </ul>
  */
 
-public class IDM {
+public class IDM implements FollowingModel {
     double v0;
     double a0;
     double b;

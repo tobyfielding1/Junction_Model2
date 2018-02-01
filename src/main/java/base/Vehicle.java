@@ -15,12 +15,15 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     double elapsedTime = 0;
     double elapsedDist = 0;
     int criticalEvents = 0;
+    public FollowingModel idm;
+    int source;
 
     List<Double[]> distTime = new ArrayList<Double[]>();
 
     public Vehicle() {
     }
 
+    /*
     public Vehicle(Vehicle other) {
         super(other.pos, other.segment, other.simulator);
         this.objectAhead = other.objectAhead;
@@ -31,15 +34,16 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
         this.elapsedDist = other.elapsedDist;
         this.distTime = other.distTime;
     }
+    */
 
-    public Vehicle(double pos, LaneSegment segment, ArrayList<LaneSegment> route, Simulator s, double v) {
-        super(pos, segment, s);
+    public Vehicle(ArrayList<LaneSegment> route, Simulator s, double v, FollowingModel idm, int source) {
+        super(0, s.laneSegments[source], s);
         this.route = route;
         this.localTime = s.time;
         this.v = v;
+        this.source = source;
+        this.idm = idm;
     }
-
-    protected abstract Vehicle makeCopy();
 
     /**
      * record every nth step

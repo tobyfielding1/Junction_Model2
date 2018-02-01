@@ -1,16 +1,17 @@
-// Reference for constant-acceleration heuristic:
+package m;// Reference for constant-acceleration heuristic:
 // Arne Kesting, Martin Treiber, Dirk Helbing
 // Enhanced Intelligent Driver Model to access the impact of driving strategies on traffic capacity
 // Philosophical Transactions of the Royal Society A 368, 4585-4605 (2010)
 
 // Reference for improved intelligent driver extension: book
 
+import base.FollowingModel;
 import base.Vehicle;
 
 /**
  * The Class ACC.
  */
-class ACC {
+class ACC implements FollowingModel {
 
     double v0;
     double a0;
