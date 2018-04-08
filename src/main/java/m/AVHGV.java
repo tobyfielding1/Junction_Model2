@@ -47,7 +47,7 @@ public class AVHGV extends Vehicle {
     }
 
     public AVHGV(ArrayList<LaneSegment> route, Simulator s, double v, int source) {
-        super(route, s, v, new IDM(v0, a0, b, T, s0, s1), source);
+        super(route, s, v, new ACC(v0, a0, b, T, s0, s1, coolness), source);
     }
 
     @Override
@@ -85,11 +85,4 @@ public class AVHGV extends Vehicle {
         return b;
     }
 
-    @Override
-    public void updateAccel(double timeStep) {
-        if (this.getObjectAhead())
-            a = idm.calcAcc(this, objectAhead.v);
-        else
-            a = idm.calcAcc(this, 0);
-    }
 }

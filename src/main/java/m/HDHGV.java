@@ -54,7 +54,7 @@ public class HDHGV extends Vehicle {
     }
 
     public HDHGV(ArrayList<LaneSegment> route, Simulator s, double v, int source) {
-        super(route, s, v, new TwoDimIDM(v0, a0, b, T, s0, s1, T1, T2, p, s.timeStep), source);
+        super(route, s, v, new TwoDimACC(v0, a0, b, T, s0, s1, T1, T2, p, s.timeStep, coolness), source);
     }
 
     @Override
@@ -92,12 +92,5 @@ public class HDHGV extends Vehicle {
         return b;
     }
 
-    @Override
-    public void updateAccel(double timeStep) {
-        if (this.getObjectAhead())
-            a = idm.calcAcc(this, objectAhead.v);
-        else
-            a = idm.calcAcc(this, 0);
-    }
 }
 

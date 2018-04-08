@@ -19,6 +19,9 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -27,7 +30,7 @@ public class Main {
         String masterFolder = "C:/Users/tobyf/IdeaProjects/Junction_Model/Data/";
         String resultsFolderName = new SimpleDateFormat("MM.dd").format(new Date()) + "_Results/";
         Reflections reflections = new Reflections("");
-        //ExecutorService es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        ExecutorService es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<Simulator> simulations = new LinkedList<Simulator>();
 
         //read vehicle details
@@ -44,21 +47,21 @@ public class Main {
                     .withType(simulatorClass).withFilter(new NameFilter(simulatorClass.getName())).build().parse());
         }
 
+        //execute each simulation
+        for (final Simulator simulation : simulations) {
+            es.execute(simulation);
+        }
+        //blocks until all threads terminate
+        es.shutdown();
+        es.awaitTermination(100, TimeUnit.MINUTES);
+
+        //output results and vehicles to CSV with timestamp prefix
+
         File file = new File(masterFolder + resultsFolderName + timeStamp + "_results.csv");
         file.getParentFile().mkdirs();
         Writer writer = new FileWriter(file);
         StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-        //execute each simulation
-        while (simulations.size() > 0) {
-            simulations.get(0).run();
-            beanToCsv.write(simulations.get(0));
-            simulations.remove(0);
-        }
-        //blocks until all threads terminate
-        //es.shutdown();
-        //es.awaitTermination(100, TimeUnit.MINUTES);
-
-        //output results and vehicles to CSV with timestamp prefix
+        beanToCsv.write(simulations);
         writer.close();
         Desktop.getDesktop().open(file);
         //copies vehicle paramaters file to timestamped version

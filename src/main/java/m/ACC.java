@@ -6,7 +6,7 @@ package m;// Reference for constant-acceleration heuristic:
 // Reference for improved intelligent driver extension: book
 
 import base.FollowingModel;
-import base.Vehicle;
+import base.RoadObject;
 
 /**
  * The Class ACC.
@@ -42,18 +42,20 @@ class ACC implements FollowingModel {
         this.coolness = coolness;
     }
 
-    public double calcAcc(Vehicle me, double frontObjectSpeed) {
-        return calcAcc(me, frontObjectSpeed, 1, 1, 1);
+    public double calcAcc(RoadObject lead, RoadObject follower, double separation) {
+        return calcAcc(lead, follower, separation, 1, 1, 1);
     }
 
-    private double calcAcc(Vehicle me, double frontObjectSpeed, double alphaT, double alphaV0, double alphaA) {
+    private double calcAcc(RoadObject lead, RoadObject follower, double separation, double alphaT, double alphaV0, double alphaA) {
 
+        if (separation < 0)
+            separation = 0;
         // Local dynamical variables
-        final double s = me.objectAheadDist;
-        final double v = me.v;
-        final double dv = me.v - frontObjectSpeed;
+        final double s = separation;
+        final double v = follower.v;
+        final double dv = follower.v - lead.v;
 
-        final double aLead = me.objectAhead == null ? me.a : me.objectAhead.a;
+        final double aLead = lead.a;
 
         // space dependencies modeled by speedlimits, alpha's
 
@@ -63,7 +65,7 @@ class ACC implements FollowingModel {
         // me.getPosition(), me.getSpeed(), alphaT, alphaV0, T, Tlocal);
         // }
         // consider external speedlimit
-        final double v0Local = Math.min(alphaV0 * v0, me.segment.targetSpeed);
+        final double v0Local = Math.min(alphaV0 * v0, follower.segment.targetSpeed);
         final double aLocal = alphaA * a0;
 
         return acc(s, v, dv, aLead, Tlocal, v0Local, aLocal);

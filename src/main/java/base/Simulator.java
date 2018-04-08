@@ -36,18 +36,19 @@ public abstract class Simulator implements Runnable {
     double maxInput;
     @CsvBindByName
     String name;
-    @CsvBindByName
-    double averageCriticalEvents; //count of breaking greater than B.
 
     @CsvBindByName
-    double AVAverageCriticalEvents;
+    double averageCriticalBraking; //count of breaking greater than B.
+
+    @CsvBindByName
+    double AVAverageCriticalBraking;
     @CsvBindByName
     double AVAverageCo2;
     @CsvBindByName
     double AVAverageDelay;
 
     @CsvBindByName
-    double HDAverageCriticalEvents;
+    double HDAverageCriticalBraking;
     @CsvBindByName
     double HDAverageCo2;
     @CsvBindByName
@@ -61,6 +62,9 @@ public abstract class Simulator implements Runnable {
     Integer AVCarPercent;
     @CsvBindByName
     Integer AVHGVPercent;
+
+    @CsvBindByName
+    String givenName;
 
 
     double duration; // in s
@@ -78,8 +82,12 @@ public abstract class Simulator implements Runnable {
         vehicleClasses = new TreeMap<Double, Class<? extends Vehicle>>();
     }
 
-    public double getAVAverageCriticalEvents() {
-        return AVAverageCriticalEvents;
+    public String getGivenName() {
+        return givenName;
+    }
+
+    public double getAVAverageCriticalBraking() {
+        return AVAverageCriticalBraking;
     }
 
     public double getAVAverageCo2() {
@@ -90,8 +98,8 @@ public abstract class Simulator implements Runnable {
         return AVAverageDelay;
     }
 
-    public double getHDAverageCriticalEvents() {
-        return HDAverageCriticalEvents;
+    public double getHDAverageCriticalBraking() {
+        return HDAverageCriticalBraking;
     }
 
     public double getHDAverageCo2() {
@@ -118,8 +126,8 @@ public abstract class Simulator implements Runnable {
         return AVHGVPercent;
     }
 
-    public double getAverageCriticalEvents() {
-        return averageCriticalEvents;
+    public double getAverageCriticalBraking() {
+        return averageCriticalBraking;
     }
 
     public double getMaxInput() {
@@ -206,15 +214,15 @@ public abstract class Simulator implements Runnable {
 
         averageDelay = finishedVehicles.stream().mapToDouble(veh -> veh.getDelay()).average().getAsDouble();
         averageCo2 = finishedVehicles.stream().mapToDouble(veh -> veh.Co2Produced).average().getAsDouble();
-        averageCriticalEvents = finishedVehicles.stream().mapToDouble(veh -> veh.criticalEvents).average().getAsDouble();
+        averageCriticalBraking = finishedVehicles.stream().mapToDouble(veh -> veh.criticalBraking).average().getAsDouble();
 
         try {
             AVAverageDelay = finishedVehicles.stream().filter(veh -> !(veh.idm instanceof HumanModel))
                     .mapToDouble(veh -> veh.getDelay()).average().getAsDouble();
             AVAverageCo2 = finishedVehicles.stream().filter(veh -> !(veh.idm instanceof HumanModel))
                     .mapToDouble(veh -> veh.Co2Produced).average().getAsDouble();
-            AVAverageCriticalEvents = finishedVehicles.stream().filter(veh -> !(veh.idm instanceof HumanModel))
-                    .mapToDouble(veh -> veh.criticalEvents).average().getAsDouble();
+            AVAverageCriticalBraking = finishedVehicles.stream().filter(veh -> !(veh.idm instanceof HumanModel))
+                    .mapToDouble(veh -> veh.criticalBraking).average().getAsDouble();
         } catch (NoSuchElementException e) {
         }
         try {
@@ -223,17 +231,17 @@ public abstract class Simulator implements Runnable {
                     .mapToDouble(veh -> veh.getDelay()).average().getAsDouble();
             HDAverageCo2 = finishedVehicles.stream().filter(veh -> (veh.idm instanceof HumanModel))
                     .mapToDouble(veh -> veh.Co2Produced).average().getAsDouble();
-            HDAverageCriticalEvents = finishedVehicles.stream().filter(veh -> (veh.idm instanceof HumanModel))
-                    .mapToDouble(veh -> veh.criticalEvents).average().getAsDouble();
+            HDAverageCriticalBraking = finishedVehicles.stream().filter(veh -> (veh.idm instanceof HumanModel))
+                    .mapToDouble(veh -> veh.criticalBraking).average().getAsDouble();
         } catch (NoSuchElementException e) {
         }
 
 
         System.out.println("simulation completed after running for " + getTimeString(time) + " with avg delay: " + averageDelay);
 
-        distTimeGraph.showChart("distance time graph for " + this.getClass().getName());
-        distTimeGraph.pack();
-        distTimeGraph.setVisible(true);
+        //distTimeGraph.showChart("distance time graph for " + this.getClass().getName());
+        //distTimeGraph.pack();
+        //distTimeGraph.setVisible(true);
     }
 
     void nextStep() {
@@ -300,7 +308,7 @@ public abstract class Simulator implements Runnable {
         if (time > 300)
             output++;
 
-        distTimeGraph.addSeries(v.distTime);
+        //distTimeGraph.addSeries(v.distTime);
 
         processSpecificData(v);
     }

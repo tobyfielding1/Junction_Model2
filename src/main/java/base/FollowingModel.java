@@ -1,6 +1,6 @@
 package base;
 
 public interface FollowingModel {
-    double calcAcc(Vehicle me, double frontObjectSpeed);
+    double calcAcc(RoadObject lead, RoadObject follower, double separation);
 }
 
