@@ -1,9 +1,11 @@
 package base;
 
-import java.util.ArrayList;
-import java.util.List;
+import m.TwoDimACC;
 
-public abstract class Vehicle extends RoadObject implements Cloneable {
+import java.util.*;
+import java.util.stream.Collectors;
+
+public abstract class Vehicle extends RoadObject {
 
     public double fuelUsed = 0; // (mL)
     public double Co2Produced = 0; // (g)
@@ -14,49 +16,17 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     double localTime;
     double elapsedTime = 0;
     double elapsedDist = 0;
-    public List<CriticalApproach> criticalApproaches;
+    public SortedSet<CriticalApproach> criticalApproaches = new TreeSet<CriticalApproach>();
     public FollowingModel idm;
     int source;
-
-    List<Double[]> distTime = new ArrayList<Double[]>();
-    double criticalBraking = 0;
+    public ArrayList<LaneSegment> routeArchive = new ArrayList<LaneSegment>();
     double limitDist = 100; //critical approach distance. (from start of critical segment)
-
-    public void nextStep(double timeStep) {
-        addCriticalAhead();
-        //recordStats(timeStep);
-        updateAccel(timeStep);
-        if (a < -this.getB())
-            criticalBraking += (-a - this.getB()) / 10;
-        updateMotion(timeStep);
-        updateEnergy(timeStep);
-        localTime += timeStep;
-        elapsedTime += timeStep;
-        try {
-            Object test = this.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Vehicle() {
-    }
-
-    /*
-    public Vehicle(Vehicle other) {
-        super(other.pos, other.segment, other.simulator);
-        this.objectAhead = other.objectAhead;
-        this.objectAheadDist = other.objectAheadDist;
-        this.route = other.route;
-        this.localTime = other.localTime;
-        this.elapsedTime = other.elapsedTime;
-        this.elapsedDist = other.elapsedDist;
-        this.distTime = other.distTime;
-    }
-    */
+    //public List<Double[]> distTime = new ArrayList<Double[]>();
+    double criticalBraking = 0;
+    boolean started = false;
 
     public Vehicle(ArrayList<LaneSegment> route, Simulator s, double v, FollowingModel idm, int source) {
-        super(0, s.laneSegments[source], s);
+        super(-20, s.laneSegments[source], s);
         this.route = route;
         this.localTime = s.time;
         this.v = v;
@@ -64,12 +34,35 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
         this.idm = idm;
     }
 
+    public Vehicle() {
+    }
+
+    public void nextStep(double timeStep) {
+        addCriticalAhead();
+        updateAccel(timeStep);
+        updateMotion(timeStep);
+        if (a < -this.getB())
+            criticalBraking += (-a - this.getB()) / 10;
+        recordStats(timeStep);
+        updateEnergy(timeStep);
+        localTime += timeStep;
+        elapsedTime += timeStep;
+
+        if (elapsedDist > 20 && !started) {
+            started = true;
+            elapsedTime = criticalBraking = fuelUsed = Co2Produced = 0;
+            //distTime = new ArrayList<Double[]>();
+            elapsedDist -= 20;
+        }
+    }
+
     /**
      * record every nth step
-     */
+
     public void recordDistTime(double timeStep) {
         distTime.add(new Double[]{elapsedDist, localTime});
     }
+     */
 
     public boolean getObjectAhead() {
         objectAhead = this.segment.roadObjects.stream().filter(ro -> (ro.pos > this.pos)).sorted().findFirst().orElse(null);
@@ -77,10 +70,10 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
             objectAheadDist = this.segment.length - this.pos;
             getObjectAhead((ArrayList<LaneSegment>) route.clone());
         } else
-            objectAheadDist = objectAhead.pos - length - this.pos;
+            objectAheadDist = objectAhead.pos - objectAhead.getLength() - this.pos;
 
-        if (objectAheadDist < 0)
-            objectAheadDist = 0;
+        //if (objectAheadDist < 0)
+        //objectAheadDist = 0;
 
         if (objectAhead != null)
             return true;
@@ -94,7 +87,7 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
 
     //change this to record different aspects
     private void recordStats(double timeStep) {
-        recordDistTime(timeStep);
+        //recordDistTime(timeStep);
     }
 
     public double getDelay() {
@@ -102,7 +95,7 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     }
 
     public void addCriticalAhead() {
-        criticalApproaches = new ArrayList<CriticalApproach>();
+        criticalApproaches = new TreeSet<CriticalApproach>();
         addCriticalAhead((ArrayList<LaneSegment>) (this.route.clone()), this.segment.length - this.pos);
     }
 
@@ -114,41 +107,84 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
         if (objectAhead == null) {
             objectAheadDist += thisSegment.length;
             getObjectAhead(rte);
-        } else
-            objectAheadDist += objectAhead.pos - length;
+        } else {
+            objectAheadDist += objectAhead.pos - objectAhead.getLength();
+        }
     }
 
     private void addCriticalAhead(ArrayList<LaneSegment> rte, double dist) {
-        if (dist >= limitDist)
+        if (dist >= limitDist || rte.size() == 0)
             return;
 
         LaneSegment thisSegment = rte.remove(0);
-        if (thisSegment.getClass().isInstance(CriticalSegment.class))
-            criticalApproaches.add(new CriticalApproach(thisSegment, dist));
+        if (thisSegment instanceof CriticalSegment) {
+            CriticalApproach ca = new CriticalApproach((CriticalSegment) thisSegment, dist);
+            criticalApproaches.add(ca);
+            ca.generateCompetition();
+        }
         dist += thisSegment.length;
 
         addCriticalAhead(rte, dist);
     }
 
     public void updateAccel(double timeStep) {
+        if (!(idm instanceof TwoDimACC) && !criticalApproaches.isEmpty())
+            idm.setAlphaA(simulator.alphaA);
+        else
+            idm.setAlphaA(1);
+
         this.getObjectAhead();
-        double realA = a = idm.calcAcc(objectAhead, this, this.objectAheadDist);
+        if (objectAhead != null) {
+            a = idm.calcAcc(objectAhead, this, this.objectAheadDist);
+        } else
+            a = idm.calcAcc(new RoadObject(), this, 100000);
+
         if (!criticalApproaches.isEmpty()) {
-            double stoppingA = 100000;
-            double virtualA = 100000;
+            double lowestA = 100000;
+
+            double resultA = a;
             for (CriticalApproach approach : criticalApproaches) {
-                if (approach.stoppingA < stoppingA)
-                    stoppingA = approach.stoppingA;
-                if (approach.virtualA < virtualA)
-                    virtualA = approach.virtualA;
+
+                //if (!criticalApproaches.isEmpty() && criticalApproaches.last().criticalSegment.roadObjects.contains(objectAhead))
+                //resultA = Math.max(a, approach.getStoppingA());
+                if (simulator.interleaving && !(this.idm instanceof TwoDimACC)) {
+                    resultA = Math.min(a, Math.max(approach.getVirtualA(), -this.getB()) * ((limitDist - approach.distanceToCritical) / limitDist));
+                    if (!this.segment.roadObjects.contains(objectAhead) && objectAhead instanceof Vehicle && !((Vehicle) objectAhead).routeArchive.contains(this.segment) || approach.cantInterleaveBehind())
+                        resultA = Math.max(resultA, approach.getStoppingA());
+                } else if (approach.priority)
+                    resultA = a;
+                else if (this.segment.roadObjects.contains(objectAhead))
+                    resultA = a;
+                else if (!approach.decisionZone()) {
+                    if (objectAhead instanceof Vehicle && ((Vehicle) objectAhead).routeArchive.contains(this.segment))
+                        resultA = Math.min(a, approach.getStoppingA());
+                    else
+                        resultA = approach.getStoppingA();
+                } else if (approach.decisionZone()) {
+                    if (approach.clearBehind()) {
+                        if (objectAhead instanceof Vehicle && ((Vehicle) objectAhead).routeArchive.contains(this.segment))
+                            resultA = a;
+                        else
+                            resultA = Math.max(approach.getStoppingA(), Math.min(a, approach.getVirtualA()));
+                    } else {
+                        if (objectAhead instanceof Vehicle && ((Vehicle) objectAhead).routeArchive.contains(this.segment))
+                            resultA = Math.min(a, approach.getStoppingA());
+                        else
+                            resultA = approach.getStoppingA();
+                    }
+                }
+                if (resultA < lowestA)
+                    lowestA = resultA;
             }
-            this.a = Math.max(stoppingA, Math.min(realA, virtualA));
+            a = lowestA;
         }
     }
 
     private void updateMotion(double timeStep) {
         double newV = v + a * timeStep;
         double dist;
+        if (v < 0.1)
+            v = 0;
         // prevents negative velocity
         if (v + a * timeStep >= 0) {
             dist = v * timeStep + 0.5 * a * Math.pow(timeStep, 2);
@@ -163,8 +199,9 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
         //if vehicle has moved to the next base.LaneSegment or off model
         if (pos > this.segment.length) {
             this.segment.roadObjects.remove(this);
-            this.pos = pos - segment.length;
+            this.pos = pos - this.segment.length;
             if (route.size() > 0) {
+                routeArchive.add(this.segment);
                 this.segment = route.remove(0);
                 this.segment.addRoadObject(this);
             } else { //driven off model
@@ -197,34 +234,71 @@ public abstract class Vehicle extends RoadObject implements Cloneable {
     class CriticalApproach implements Comparable<CriticalApproach> {
 
         Vehicle owner;
-        LaneSegment criticalSegment;
+        CriticalSegment criticalSegment;
+        boolean priority;
         double distanceToCritical;
-        double stoppingA;
-        double virtualA;
+        List<CriticalApproach> competingCriticalApproaches;
 
-        public CriticalApproach(LaneSegment criticalSegment, double distanceToCritical) {
+        public CriticalApproach(CriticalSegment criticalSegment, double distanceToCritical) {
             this.criticalSegment = criticalSegment;
             this.distanceToCritical = distanceToCritical;
             owner = Vehicle.this;
 
-            stoppingA = idm.calcAcc(new RoadObject(0, criticalSegment, simulator), Vehicle.this, distanceToCritical);
+            if (criticalSegment.priorityApproaches.contains(segment))
+                priority = true;
+        }
 
+        public boolean cantInterleaveBehind() {
+            CriticalApproach follower = competingCriticalApproaches.stream().filter(ca -> ca.distanceToCritical > this.distanceToCritical).sorted(Comparator.reverseOrder()).findFirst().orElse(null);
+            if (follower == null)
+                return false;
+            return (follower.owner.idm instanceof TwoDimACC && follower.priority && !clearBehind());
+        }
+
+        public void generateCompetition() {
             List<CriticalApproach> allCriticalApproaches = new ArrayList<CriticalApproach>();
             simulator.vehicles.forEach(v -> allCriticalApproaches.addAll(v.criticalApproaches));
-
-            CriticalApproach leader = allCriticalApproaches.stream().filter(ca -> ca.criticalSegment.equals(this.criticalSegment) && ca.distanceToCritical < this.distanceToCritical).sorted().findFirst().orElse(null);
-
-            if (leader == null)
-                virtualA = 1000000;
-            else
-                virtualA = idm.calcAcc(leader.owner, this.owner, this.distanceToCritical - leader.distanceToCritical - length);
+            competingCriticalApproaches = allCriticalApproaches.stream().filter(ca -> ca.criticalSegment.equals(criticalSegment)).filter(ca -> !ca.owner.segment.equals(this.owner.segment)).collect(Collectors.toList());
         }
 
         @Override
         public int compareTo(CriticalApproach o) {
             if (this.distanceToCritical < o.distanceToCritical) return 1;
             if (this.distanceToCritical > o.distanceToCritical) return -1;
-            return 0;
+            if (this.priority)
+                return 1;
+            else
+                return -1;
+        }
+
+        double getVirtualA() {
+            CriticalApproach leader;
+            leader = competingCriticalApproaches.stream().filter(ca -> ca.distanceToCritical < this.distanceToCritical + Math.random() / 2).sorted().findFirst().orElse(null);
+
+            if (leader == null)
+                return idm.calcAcc(new RoadObject(), this.owner, 1000000);
+            else
+                return idm.calcAcc(leader.owner, this.owner, this.distanceToCritical - leader.distanceToCritical - leader.owner.getLength());
+        }
+
+        double getStoppingA() {
+            if (distanceToCritical < 0.1)
+                return 0;
+            else
+                return idm.calcAcc(new RoadObject(0, criticalSegment, simulator), Vehicle.this, distanceToCritical - 0.1);
+        }
+
+        boolean clearBehind() {
+            CriticalApproach follower = competingCriticalApproaches.stream().filter(ca -> ca.distanceToCritical > this.distanceToCritical).sorted(Comparator.reverseOrder()).findFirst().orElse(null);
+            if (follower == null)
+                return true;
+            return (follower.owner.idm.calcAcc(this.owner, follower.owner, follower.distanceToCritical
+                    - this.distanceToCritical - owner.getLength()) >= owner.a && follower.distanceToCritical
+                    - this.distanceToCritical - owner.getLength() > 2 && follower.distanceToCritical / follower.owner.v > 1);
+        }
+
+        boolean decisionZone() {
+            return (distanceToCritical <= criticalSegment.decisionZone);
         }
 
     }

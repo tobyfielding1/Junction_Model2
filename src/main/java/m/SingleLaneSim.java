@@ -15,9 +15,6 @@ public class SingleLaneSim extends Simulator {
 
     double[] spawnTimer = {0}; // starts as all zeroes, size equals number of start segments
 
-    public SingleLaneSim() {
-    }
-
     public double getSeg1InputRate() {
         return seg1InputRate;
     }

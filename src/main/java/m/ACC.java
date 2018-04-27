@@ -7,6 +7,7 @@ package m;// Reference for constant-acceleration heuristic:
 
 import base.FollowingModel;
 import base.RoadObject;
+import base.Vehicle;
 
 /**
  * The Class ACC.
@@ -21,6 +22,7 @@ class ACC implements FollowingModel {
     int delta = 4;
     double s1;
     double coolness;
+    double alphaA;
 
     /**
      * Constructor.
@@ -43,15 +45,30 @@ class ACC implements FollowingModel {
     }
 
     public double calcAcc(RoadObject lead, RoadObject follower, double separation) {
-        return calcAcc(lead, follower, separation, 1, 1, 1);
+        return calcAcc(lead, follower, separation, 1, 1, alphaA);
+    }
+
+    public void setAlphaA(double alphaA) {
+        this.alphaA = alphaA;
+    }
+
+    @Override
+    public double getB() {
+        return b;
     }
 
     private double calcAcc(RoadObject lead, RoadObject follower, double separation, double alphaT, double alphaV0, double alphaA) {
 
+        double s0Here = s0;
+
+        if (!(lead instanceof Vehicle))
+            s0Here = 0;
+
         if (separation < 0)
             separation = 0;
+
         // Local dynamical variables
-        final double s = separation;
+        final double s = separation + Math.random() * 0.2;
         final double v = follower.v;
         final double dv = follower.v - lead.v;
 
@@ -68,7 +85,7 @@ class ACC implements FollowingModel {
         final double v0Local = Math.min(alphaV0 * v0, follower.segment.targetSpeed);
         final double aLocal = alphaA * a0;
 
-        return acc(s, v, dv, aLead, Tlocal, v0Local, aLocal);
+        return acc(s, v, dv, aLead, Tlocal, v0Local, aLocal, s0Here);
     }
 
 
@@ -86,7 +103,7 @@ class ACC implements FollowingModel {
      * @param aLocal  the a local
      * @return the double
      */
-    private double acc(double s, double v, double dv, double aLead, double TLocal, double v0Local, double aLocal) {
+    private double acc(double s, double v, double dv, double aLead, double TLocal, double v0Local, double aLocal, double s0) {
         // treat special case of v0=0 (standing obstacle)
         if (v0Local == 0) {
             return 0;

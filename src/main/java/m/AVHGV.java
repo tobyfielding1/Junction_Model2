@@ -9,6 +9,14 @@ import java.util.ArrayList;
 
 public class AVHGV extends Vehicle {
 
+    //input parameters
+    @CsvBindByName
+    public static double length;
+
+    public double getLength() {
+        return length;
+    }
+
     @CsvBindByName
     public static Integer percent;
 

@@ -29,7 +29,7 @@ import base.Vehicle;
  * </ul>
  */
 
-public class IDM implements FollowingModel {
+public abstract class IDM implements FollowingModel {
     double v0;
     double a0;
     double b;

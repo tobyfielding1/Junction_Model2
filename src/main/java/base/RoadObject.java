@@ -1,13 +1,10 @@
 package base;
 
-import com.opencsv.bean.CsvBindByName;
-
 public class RoadObject implements Comparable<RoadObject> {
 
-    //input parameters
-    @CsvBindByName
-    public static double length = 0;
-
+    public double getLength() {
+        return 0;
+    }
 
     public double v = 0;
     public double a = 0;

@@ -66,6 +66,7 @@ public class Main {
         Desktop.getDesktop().open(file);
         //copies vehicle paramaters file to timestamped version
         Files.copy(Paths.get(masterFolder + "vehicles.csv"), Paths.get(masterFolder + resultsFolderName + timeStamp + "_vehicles.csv"));
+        System.out.println("\n******************************\nSimulation Results Reference: " + timeStamp + "\n******************************");
     }
 }
 

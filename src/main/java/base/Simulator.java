@@ -66,13 +66,17 @@ public abstract class Simulator implements Runnable {
     @CsvBindByName
     String givenName;
 
+    public DistTimeGraph distTimeGraph = new DistTimeGraph("graph window");
+    @CsvBindByName
+    boolean interleaving;
 
     double duration; // in s
     int output = 0; // count of vehicles leaving
     int input = 0; // count of vehicles entering
     double lastThroughputCheckTime = 300; //when was the last time output was measured
     double lastInputCheckTime = 300;
-    DistTimeGraph distTimeGraph = new DistTimeGraph("graph window");
+    @CsvBindByName
+    double alphaA;
     private long startTime = System.currentTimeMillis();
     Map<Double, Class<? extends Vehicle>> vehicleClasses;
 
@@ -82,8 +86,16 @@ public abstract class Simulator implements Runnable {
         vehicleClasses = new TreeMap<Double, Class<? extends Vehicle>>();
     }
 
+    public double getAlphaA() {
+        return alphaA;
+    }
+
     public String getGivenName() {
         return givenName;
+    }
+
+    public boolean getInterleaving() {
+        return interleaving;
     }
 
     public double getAVAverageCriticalBraking() {
@@ -251,16 +263,19 @@ public abstract class Simulator implements Runnable {
             Vehicle v = newVehicles.get(i);
             double objectAheadDist;
             RoadObject objectAhead = v.segment.roadObjects.stream().sorted().findFirst().orElse(null);
-            if (objectAhead != null)
+            if (objectAhead != null) {
                 objectAheadDist = objectAhead.pos;
-            else
-                objectAheadDist = v.segment.getLength();
-            if (objectAheadDist > RoadObject.length + RoadObject.length + 4) {
+                if (objectAheadDist > objectAhead.getLength() + 1) {
+                    vehicles.add(v);
+                    v.segment.addRoadObject(v);
+                } else
+                    newVehicles.remove(v);
+            } else {
                 vehicles.add(v);
                 v.segment.addRoadObject(v);
-            } else
-                newVehicles.remove(v);
+            }
         }
+
         if (time - lastInputCheckTime > 60) {
             lastInputCheckTime = time;
             if (input > maxInput)
@@ -307,8 +322,6 @@ public abstract class Simulator implements Runnable {
         }
         if (time > 300)
             output++;
-
-        //distTimeGraph.addSeries(v.distTime);
 
         processSpecificData(v);
     }

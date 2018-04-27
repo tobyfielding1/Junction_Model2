@@ -9,6 +9,14 @@ import java.util.ArrayList;
 
 public class HDHGV extends Vehicle {
 
+    //input parameters
+    @CsvBindByName
+    public static double length = 0;
+
+    public double getLength() {
+        return length;
+    }
+
     @CsvBindByName
     public static Integer percent;
     //input parameters for motion
