@@ -27,10 +27,10 @@ public class Main {
 
     public static void main(String[] args) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, InterruptedException {
         String timeStamp = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
-        String masterFolder = "C:/Users/tobyf/IdeaProjects/Junction_Model/Data/";
+        String masterFolder = "Data/";
         String resultsFolderName = new SimpleDateFormat("MM.dd").format(new Date()) + "_Results/";
         Reflections reflections = new Reflections("");
-        ExecutorService es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        ExecutorService es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
         List<Simulator> simulations = new LinkedList<Simulator>();
 
         //read vehicle details
@@ -53,7 +53,8 @@ public class Main {
         }
         //blocks until all threads terminate
         es.shutdown();
-        es.awaitTermination(100, TimeUnit.MINUTES);
+        es.awaitTermination(1, TimeUnit.MINUTES);
+
 
         //output results and vehicles to CSV with timestamp prefix
 
@@ -61,12 +62,14 @@ public class Main {
         file.getParentFile().mkdirs();
         Writer writer = new FileWriter(file);
         StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        simulations.stream().filter(s -> s.getMaxThroughput() == 0).forEach(s -> s.setGivenName(""));
         beanToCsv.write(simulations);
         writer.close();
         Desktop.getDesktop().open(file);
         //copies vehicle paramaters file to timestamped version
         Files.copy(Paths.get(masterFolder + "vehicles.csv"), Paths.get(masterFolder + resultsFolderName + timeStamp + "_vehicles.csv"));
         System.out.println("\n******************************\nSimulation Results Reference: " + timeStamp + "\n******************************");
+        System.exit(11);
     }
 }
 

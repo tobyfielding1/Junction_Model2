@@ -4,8 +4,8 @@ import java.util.List;
 
 public class CriticalSegment extends LaneSegment {
 
-    List<LaneSegment> priorityApproaches;
-    double decisionZone;
+    public List<LaneSegment> priorityApproaches;
+    public double decisionZone;
 
     public CriticalSegment(List<LaneSegment> priorityApproaches, double decisionZone) {
         super(7.5, 5);

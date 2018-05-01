@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class Simulator implements Runnable {
     final static DateFormat dateFormat = new SimpleDateFormat("mm:ss");
+
+    public int maxContested;
     //input parameters
     @CsvBindByName
     public double timeStep; // in s
@@ -189,7 +191,7 @@ public abstract class Simulator implements Runnable {
 
                 if (p <= cumulativeProbability) {
                     Constructor<?> cons = vehicleClasses.get(i).getConstructor(ArrayList.class, Simulator.class, double.class, int.class);
-                    return (Vehicle) cons.newInstance(generateRoute(laneSegments[startSegment]), this, laneSegments[startSegment].targetSpeed, startSegment);
+                    return (Vehicle) cons.newInstance(generateRoute(new ArrayList<LaneSegment>(Arrays.asList(laneSegments[startSegment]))), this, laneSegments[startSegment].targetSpeed, startSegment);
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -256,7 +258,7 @@ public abstract class Simulator implements Runnable {
         //distTimeGraph.setVisible(true);
     }
 
-    void nextStep() {
+    public void nextStep() {
         //logic for adding vehicles
         List<Vehicle> newVehicles = this.generateVehicles();
         for (int i = 0; i < newVehicles.size(); i++) {
@@ -296,15 +298,22 @@ public abstract class Simulator implements Runnable {
 
     public abstract List<Vehicle> generateVehicles();
 
-    public ArrayList<LaneSegment> generateRoute(LaneSegment ls) {
-        if (ls.successors.size() <= 0)
-            return new ArrayList<LaneSegment>();
+    public ArrayList<LaneSegment> generateRoute(ArrayList<LaneSegment> ls) {
+        LaneSegment seg = ls.get(ls.size() - 1);
+        if (seg.successors.size() <= 0) {
+            ls.remove(0);
+            return ls;
+        }
 
-        LaneSegment lsNext = ls.successors.get((int) (Math.random() * ls.successors.size() - 1));
-        ArrayList<LaneSegment> list = new ArrayList<LaneSegment>();
-        list.add(lsNext);
-        list.addAll(generateRoute(lsNext));
-        return list;
+        Random rand = new Random();
+        LaneSegment lsNext = seg.successors.get(rand.nextInt(seg.successors.size()));
+
+        if (lsNext instanceof CriticalSegment && seg instanceof CriticalSegment && (ls.size() > maxContested) && ls.get(ls.size() - maxContested) instanceof CriticalSegment)
+            return generateRoute(ls);
+        else {
+            ls.add(lsNext);
+            return generateRoute(ls);
+        }
     }
 
     public void finishVehicle(Vehicle v) {
@@ -328,4 +337,7 @@ public abstract class Simulator implements Runnable {
 
     public abstract void processSpecificData(Vehicle v);
 
+    public void setGivenName(String name) {
+        this.givenName = name;
+    }
 }

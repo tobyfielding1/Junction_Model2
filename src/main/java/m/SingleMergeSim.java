@@ -69,5 +69,6 @@ public class SingleMergeSim extends Simulator {
         segments[2].addSuccessor(segments[3]);
 
         laneSegments = segments;
+        maxContested = 3;
     }
 }

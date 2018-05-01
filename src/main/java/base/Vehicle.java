@@ -21,7 +21,7 @@ public abstract class Vehicle extends RoadObject {
     int source;
     public ArrayList<LaneSegment> routeArchive = new ArrayList<LaneSegment>();
     double limitDist = 100; //critical approach distance. (from start of critical segment)
-    //public List<Double[]> distTime = new ArrayList<Double[]>();
+    public List<Double[]> distTime = new ArrayList<Double[]>();
     double criticalBraking = 0;
     boolean started = false;
 
@@ -51,18 +51,18 @@ public abstract class Vehicle extends RoadObject {
         if (elapsedDist > 20 && !started) {
             started = true;
             elapsedTime = criticalBraking = fuelUsed = Co2Produced = 0;
-            //distTime = new ArrayList<Double[]>();
+            distTime = new ArrayList<Double[]>();
             elapsedDist -= 20;
         }
     }
 
     /**
      * record every nth step
-
+     */
     public void recordDistTime(double timeStep) {
         distTime.add(new Double[]{elapsedDist, localTime});
     }
-     */
+
 
     public boolean getObjectAhead() {
         objectAhead = this.segment.roadObjects.stream().filter(ro -> (ro.pos > this.pos)).sorted().findFirst().orElse(null);
@@ -147,10 +147,12 @@ public abstract class Vehicle extends RoadObject {
 
                 //if (!criticalApproaches.isEmpty() && criticalApproaches.last().criticalSegment.roadObjects.contains(objectAhead))
                 //resultA = Math.max(a, approach.getStoppingA());
-                if (simulator.interleaving && !(this.idm instanceof TwoDimACC)) {
+                if (simulator.interleaving && !(this.idm instanceof TwoDimACC) && !(approach.priority && approach.HDVLeader())) {
                     resultA = Math.min(a, Math.max(approach.getVirtualA(), -this.getB()) * ((limitDist - approach.distanceToCritical) / limitDist));
-                    if (!this.segment.roadObjects.contains(objectAhead) && objectAhead instanceof Vehicle && !((Vehicle) objectAhead).routeArchive.contains(this.segment) || approach.cantInterleaveBehind())
+                    if (!this.segment.roadObjects.contains(objectAhead) && objectAhead instanceof Vehicle && !((Vehicle) objectAhead).routeArchive.contains(this.segment))
                         resultA = Math.max(resultA, approach.getStoppingA());
+                    if (approach.cantInterleaveBehind())
+                        resultA = Math.min(resultA, approach.getStoppingA());
                 } else if (approach.priority)
                     resultA = a;
                 else if (this.segment.roadObjects.contains(objectAhead))
@@ -252,7 +254,7 @@ public abstract class Vehicle extends RoadObject {
             CriticalApproach follower = competingCriticalApproaches.stream().filter(ca -> ca.distanceToCritical > this.distanceToCritical).sorted(Comparator.reverseOrder()).findFirst().orElse(null);
             if (follower == null)
                 return false;
-            return (follower.owner.idm instanceof TwoDimACC && follower.priority && !clearBehind());
+            return (follower.owner.idm instanceof TwoDimACC && follower.priority && !this.clearBehind());
         }
 
         public void generateCompetition() {
@@ -281,6 +283,14 @@ public abstract class Vehicle extends RoadObject {
                 return idm.calcAcc(leader.owner, this.owner, this.distanceToCritical - leader.distanceToCritical - leader.owner.getLength());
         }
 
+        boolean HDVLeader() {
+            CriticalApproach leader;
+            leader = competingCriticalApproaches.stream().filter(ca -> ca.distanceToCritical < this.distanceToCritical + Math.random() / 2).sorted().findFirst().orElse(null);
+            if (leader == null)
+                return false;
+            else return leader.owner.idm instanceof TwoDimACC;
+        }
+
         double getStoppingA() {
             if (distanceToCritical < 0.1)
                 return 0;
@@ -293,8 +303,7 @@ public abstract class Vehicle extends RoadObject {
             if (follower == null)
                 return true;
             return (follower.owner.idm.calcAcc(this.owner, follower.owner, follower.distanceToCritical
-                    - this.distanceToCritical - owner.getLength()) >= owner.a && follower.distanceToCritical
-                    - this.distanceToCritical - owner.getLength() > 2 && follower.distanceToCritical / follower.owner.v > 1);
+                    - this.distanceToCritical - owner.getLength()) + owner.a >= 0 || follower.owner.v < 1);
         }
 
         boolean decisionZone() {
